@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from ""; // Import NextAuth session helper
+import { auth } from "@/lib/auth"; // Import NextAuth session helper
 import { UsersDAO } from "@/dao/UsersDAO"; // Adjust path as needed
 
 export async function GET(req: NextRequest) {
@@ -17,8 +17,7 @@ export async function GET(req: NextRequest) {
 
   if (upsertResult.isErr()) {
     console.error(`Error upserting user: ${upsertResult.error.message}`);
-    return NextResponse.redirect(new URL("/error", req.url)); // Redirect to error page
   }
 
-  return NextResponse.redirect(new URL("/dashboard", req.url)); // Redirect to dashboard
+  return NextResponse.redirect(new URL("/", req.url)); // Redirect to dashboard
 }
