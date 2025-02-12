@@ -1,6 +1,20 @@
-import NextAuth from 'next-auth';
-import GitHub from 'next-auth/providers/github';
+import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [GitHub]
+export const {handlers, signIn, signOut, auth} = NextAuth({
+  providers: [
+    GoogleProvider({
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+    }),
+  ],
+  session: {
+    strategy: 'jwt',
+  },
+  callbacks: {
+    async signIn({account, profile}) {
+      console.log(`account: ${account} for profile: ${profile} is signing in `)
+      return true
+    }
+  },
 });

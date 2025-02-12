@@ -1,11 +1,12 @@
+import Image from 'next/image';
 import './globals.css';
-
+import logo from 'public/images/logo.png'
 import { Analytics } from '@vercel/analytics/react';
-
+import Link from 'next/link';
 export const metadata = {
-  title: 'Next.js App Router + NextAuth + Tailwind CSS',
+  title: 'Investment Dashboard',
   description:
-    'A user admin dashboard configured with Next.js, Postgres, NextAuth, Tailwind CSS, TypeScript, and Prettier.'
+    'No name brand investments dashboard and investment tracker '
 };
 
 export default function RootLayout({
@@ -15,7 +16,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="flex min-h-screen w-full flex-col">{children}</body>
+      <body className="dark flex min-h-screen p-2 w-full flex-col">
+        <div className="relative w-full max-w-[800px] mt-20 h-16 mx-auto">
+          <Link href='/'>
+            <Image
+              alt="logo"
+              src={logo}
+              fill={true}
+              priority // Ensures the logo loads quickly
+            />
+          </Link>
+        </div>
+        {children}
+      </body>
       <Analytics />
     </html>
   );

@@ -1,5 +1,11 @@
 export default {
   images: {
+    localPatterns: [
+      {
+        pathname: '/images/**',
+        search: '',
+      },
+    ],
     remotePatterns: [
       {
         protocol: 'https',
