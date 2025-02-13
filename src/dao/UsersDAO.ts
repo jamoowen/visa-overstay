@@ -1,9 +1,9 @@
 import {Result, err, ok} from "neverthrow";
-import {InsertUser, users} from "../db/schema";
-import {db} from "../db/db";
+import {InsertUser, users} from "@/db/schema";
+import {db} from "@/db/db";
 
 export class UsersDAO {
-  public static upsertUser = async (user: InsertUser): Promise<Result<number, Error>> => {
+  public static async upsertUser  (user: InsertUser): Promise<Result<number, Error>>  {
     try {
       const fullISODate = new Date().toISOString();
       const [newUser] = await db.insert(users)

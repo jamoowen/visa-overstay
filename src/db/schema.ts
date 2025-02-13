@@ -21,5 +21,5 @@ export const travelHistory = pgTable('travel_history', {
   updatedAt: date("updated_at").defaultNow().notNull()
 });
 
-export type InsertToDo = typeof travelHistory.$inferInsert;
-export type SelectToDo = typeof travelHistory.$inferSelect;
+export type InsertTrip = typeof travelHistory.$inferInsert;
+export type SelectTrip = typeof travelHistory.$inferSelect;

@@ -7,7 +7,7 @@ export default async function Page() {
 
   return (
     <div className='flex flex-col items-center justify-center'>
-      <div className="relative w-full max-w-[800px] mt-10 h-16 mx-auto">
+      <div className="relative w-[80%] mt-12  h-32 mx-auto">
         <Link href='/'>
           <Image
             alt="logo"

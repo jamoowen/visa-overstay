@@ -24,7 +24,6 @@ export default function NavBar({user, onSignOut}: {
           className="items-center justify-between  flex w-auto order-0"
           id="navbar-sticky"
         >
-
           <ul className="flex flex-row sm:space-x-8 space-x-3 rtl:space-x-reverse border-0">
             <li>
               <Link
@@ -51,6 +50,7 @@ export default function NavBar({user, onSignOut}: {
             </li>
           </ul>
         </div>
+       
         <div className="flex flex-col items-end">
           <form
             className="md:order-1"
