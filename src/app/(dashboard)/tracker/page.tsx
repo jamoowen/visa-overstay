@@ -7,7 +7,6 @@ export default async function Page() {
   return (
     <div className='flex items-center justify-center'>
       <div className='flex flex-col max-w-[500px] items-start space-y-10  pt-32'>
-        tracker...
         <CountryAutocomplete/>
       </div>
     </div>
