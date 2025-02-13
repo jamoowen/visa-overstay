@@ -30,7 +30,9 @@ export default function NavBar({user, onSignOut}: {
               <Link
                 onClick={() => setActivePath('/home')}
                 href="/home"
-                className={cn(activePath === '/home' ? 'text-purple-600 dark:text-purple-400 font-semibold' : 'text-gray-600 hover:text-purple-600 dark:text-gray-300 dark:hover:text-purple-400')}
+                className={cn(activePath === '/home' && 'underline',
+                  'text-purple-600 dark:text-purple-400 font-semibold'
+                )}
               >
                 Home
               </Link>
@@ -39,7 +41,10 @@ export default function NavBar({user, onSignOut}: {
               <Link
                 onClick={() => setActivePath('/tracker')}
                 href="/tracker"
-                className={cn(activePath === '/home' ? 'text-purple-600 dark:text-purple-400 font-semibold' : 'text-gray-600 hover:text-purple-600 dark:text-gray-300 dark:hover:text-purple-400')}
+                className={cn(
+                  activePath === '/tracker' && 'underline',
+                  'text-purple-600 dark:text-purple-400 font-semibold'
+                )}
               >
                 Tracker
               </Link>

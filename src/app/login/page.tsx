@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@/_2/ui/button';
 import {
   Card,
   CardFooter,
   CardHeader,
   CardTitle
-} from '@/components/ui/card';
+} from '@/_2/ui/card';
 import { signIn } from '@/lib/auth';
 console.log(process.env.AUTH_GOOGLE_ID)
 console.log(process.env.AUTH_GOOGLE_SECRET)
