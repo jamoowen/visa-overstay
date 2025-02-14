@@ -14,34 +14,34 @@ export const {handlers, signIn, signOut, auth} = NextAuth({
   },
   callbacks: {
     async signIn({account, profile}) {
-      console.log(`account: ${account} for profile: ${JSON.stringify(profile)} is signing in `)
       if (!profile || !profile.email) {
         return false
       }
       return true
     },
     async jwt({token, account, profile}) {
-      // Persist the OAuth access_token and or the user id to the token right after signin
       if (account && profile && profile.email && profile.name) {
         //get the userid
-        const response = await fetch('/api/sign-in', {
-          method: 'POST',
-          body: JSON.stringify({name: profile.name, email: profile.email, picture: profile.picture})
-        })
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/sign-in`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: profile.name, email: profile.email })
+        });
         if (!response.ok) {
-          return
+          return token
         }
         const userId = (await response.json()).userId
-        token.picture = userId
+        token.userId= userId;
       }
       return token
     },
-    async session({session, token}) {
-      if (session) {
-        token.userId = 'seshhhhhh'
+    async session({ session, token }) {
+      if (token.userId) {
+        //ignoring the below because i dont feel like changing the user type to accept additional vals
+        // @ts-ignore
+        session.user.userId = token.userId; // Persist user ID in session
       }
-      return session
-    }
-
+      return session;
+    },
   },
 });

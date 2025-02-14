@@ -3,20 +3,20 @@ import {InsertUser, users} from "@/db/schema";
 import {db} from "@/db/db";
 
 export class UsersDAO {
+
   public static async upsertUser  (user: InsertUser): Promise<Result<number, Error>>  {
+    const currentTime = new Date();
     try {
-      const fullISODate = new Date().toISOString();
       const [newUser] = await db.insert(users)
         .values({
           ...user,
-          updatedAt: fullISODate,
+          updatedAt: currentTime,
         })
         .onConflictDoUpdate({
           target: users.email,
           set: {
             name: user.name,
-            profilePicture: user.profilePicture,
-            updatedAt: fullISODate,
+            updatedAt: currentTime,
           },
         })
         .returning({id: users.id});

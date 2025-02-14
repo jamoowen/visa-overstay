@@ -10,13 +10,10 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const session = await auth();
   const isPublicRoute =PUBLIC_ROUTES.includes(pathname);
-  console.log(`middleware: ${pathname}`, session);
   // Redirect unauthenticated users from protected routes
   if (!session?.user && !isPublicRoute) {
-    console.log(`UNAUTHORIZED`)
     return NextResponse.redirect(new URL("/", request.url));
   }
-
   // Redirect authenticated users away from /login
   if (session?.user && isPublicRoute) {
     return NextResponse.redirect(new URL("/home", request.url));

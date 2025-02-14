@@ -5,9 +5,13 @@ import {eq} from "drizzle-orm";
 
 export class TravelHistoryDAO {
   public static async insertTrip(trip: InsertTrip): Promise<Result<void, Error>> {
+    const currentTime = new Date();
     try {
       const result = await db.insert(travelHistory)
-        .values(trip)
+        .values({
+          ...trip,
+          updatedAt: currentTime
+        })
       return ok(undefined);
     } catch (error) {
       return err(new Error(`Error inserting trip: ${error}`));

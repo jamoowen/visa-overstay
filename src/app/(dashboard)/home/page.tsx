@@ -4,7 +4,6 @@ import {ArrowBigDown, ArrowBigRight} from "lucide-react";
 export default async function Page() {
   const session = await auth();
   const user = session?.user;
-  console.log(`USER: ${JSON.stringify(user)}`);
   return (
     <div className='flex items-center justify-center'>
       <div className='flex flex-col max-w-[500px] items-start space-y-10  pt-32'>

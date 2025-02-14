@@ -1,23 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth"; // Import NextAuth session helper
 import { UsersDAO } from "@/dao/UsersDAO"; // Adjust path as needed
 
-export async function GET(req: NextRequest) {
-  const session = await auth(); // Get the logged-in user
-  if (!session || !session.user?.email) {
-    return NextResponse.redirect(new URL("/login", req.url)); // Redirect if no session
+export async function POST(req: NextRequest) {
+ const { name, email } = await req.json();
+  if (!email) {
+    return NextResponse.json({ error: "Email is required" }, { status: 400 });
   }
-
-  // Insert or update user in DB
   const upsertResult = await UsersDAO.upsertUser({
-    name: session.user.name || "",
-    email: session.user.email,
-    profilePicture: session.user.image || "",
+    name: name ?? "",
+    email: email,
   });
-
   if (upsertResult.isErr()) {
     console.error(`Error upserting user: ${upsertResult.error.message}`);
+    return NextResponse.json(
+      { error: "Failed to upsert user" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.redirect(new URL("/", req.url)); // Redirect to dashboard
+  return NextResponse.json({userId: upsertResult.value})
 }

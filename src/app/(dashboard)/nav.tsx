@@ -50,7 +50,7 @@ export default function NavBar({user, onSignOut}: {
             </li>
           </ul>
         </div>
-       
+
         <div className="flex flex-col items-end">
           <form
             className="md:order-1"

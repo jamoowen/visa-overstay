@@ -6,8 +6,6 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { signIn } from '@/lib/auth';
-console.log(process.env.AUTH_GOOGLE_ID)
-console.log(process.env.AUTH_GOOGLE_SECRET)
 
 export default function LoginPage() {
   return (
