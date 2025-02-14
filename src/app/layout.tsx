@@ -13,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="flex min-h-screen dark p-2 w-full flex-col">
+      <body className="flex min-h-screen p-2 w-full flex-col">
         {children}
       </body>
       <Analytics />

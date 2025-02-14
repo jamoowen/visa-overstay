@@ -45,8 +45,12 @@ const formatDate = (date: Date): string => {
   });
 };
 
+// const handleSubmit = (form: Form) => {
+//
+// }
 
-export function ComboboxForm() {
+
+export function TravelHistoryForm() {
   const [countries, setCountries] = useState<string[]>([]);
   const [open, setOpen] = useState(false)
 
@@ -281,4 +285,4 @@ export function ComboboxForm() {
   );
 }
 
-export default ComboboxForm;
+export default TravelHistoryForm;

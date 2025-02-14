@@ -1,5 +1,5 @@
 import {auth} from "@/lib/auth";
-import CountryAutocomplete from "@/app/(dashboard)/tracker/CountryAutocomplete";
+import CountryAutocomplete from "@/app/(dashboard)/tracker/TravelHistoryForm";
 
 export default async function Page() {
   const session = await auth();
