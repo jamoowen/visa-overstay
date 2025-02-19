@@ -6,8 +6,6 @@ import {User} from "next-auth";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {useState} from "react";
-import Image from "next/image";
-import logo from "../../../public/images/logo.png";
 
 export default function NavBar({user, onSignOut}: {
   user: User | undefined,
@@ -38,14 +36,14 @@ export default function NavBar({user, onSignOut}: {
             </li>
             <li>
               <Link
-                onClick={() => setActivePath('/tracker')}
-                href="/tracker"
+                onClick={() => setActivePath('/travel-history')}
+                href="/travel-history"
                 className={cn(
-                  activePath === '/tracker' && 'underline',
+                  activePath === '/travel-history' && 'underline',
                   'text-purple-600 dark:text-purple-400 font-semibold'
                 )}
               >
-                Tracker
+               Travel History
               </Link>
             </li>
           </ul>

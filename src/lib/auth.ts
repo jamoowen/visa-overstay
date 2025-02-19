@@ -37,9 +37,7 @@ export const {handlers, signIn, signOut, auth} = NextAuth({
     },
     async session({ session, token }) {
       if (token.userId) {
-        //ignoring the below because i dont feel like changing the user type to accept additional vals
-        // @ts-ignore
-        session.user.userId = token.userId; // Persist user ID in session
+        session.user.userId = token.userId as number; // Persist user ID in session
       }
       return session;
     },

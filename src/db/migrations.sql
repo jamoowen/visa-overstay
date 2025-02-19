@@ -14,3 +14,5 @@ CREATE TABLE IF NOT EXISTS travel_history (
     departure_date DATE,
     updated_at DATE DEFAULT NOW() NOT NULL
 );
+
+ALTER TABLE travel_history ADD CONSTRAINT unique_user_departure UNIQUE (user_id, departure_date);
