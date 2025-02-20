@@ -18,7 +18,7 @@ export function TravelHistory({userId, trips}: {userId: number, trips: SelectTri
         Travel History
       </h2>
       <TravelHistoryForm userId={userId} setTripsList={setTripsList} />
-      <TravelHistoryList trips={tripsList}/>
+      <TravelHistoryList trips={tripsList} setTripsList={setTripsList}/>
     </>
   );
 }

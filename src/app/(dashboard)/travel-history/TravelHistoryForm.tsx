@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/dialog"
 import {worldCountries} from "public/data/world-countries"
 import {InsertTrip, SelectTrip} from "@/db/schema";
+import {optimisticallyUpdateTripState} from "@/app/(dashboard)/travel-history/lib/utils";
 
 const EARLIEST_DATE = new Date("2015-01-01")
 
@@ -58,19 +59,6 @@ const formatDate = (date: Date): string => {
     year: "numeric",
   });
 };
-
-const optimisticallyUpdateTripState = (newTrip: InsertTrip, setTripsList: React.Dispatch<React.SetStateAction<SelectTrip[]>>) => {
-  const tripToAddToState: SelectTrip = {...newTrip, id: -1, updatedAt: new Date(), departureDate: null};
-
-  setTripsList((previousTrips: SelectTrip[]) => {
-    return [...previousTrips, tripToAddToState].sort((a, b) => {
-      const dateA = new Date(a.arrivalDate).getTime();
-      const dateB = new Date(b.arrivalDate).getTime();
-      return dateB - dateA;
-    });
-  });
-};
-
 
 type CountryOption = {
   key: string;

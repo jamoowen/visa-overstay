@@ -15,7 +15,6 @@ const getTravelHistory = unstable_cache(
   { revalidate: 360000, tags: ['trips'] }
 )
 
-
 export default async function Page() {
   const session = await auth();
   const user = session?.user;
@@ -23,13 +22,9 @@ export default async function Page() {
 
   const travelHistory = await getTravelHistory(user?.userId);
 
-
-  // const allTrips = await getTravelHistory(user?.userId);
-  console.log(`Trips history: ${JSON.stringify(travelHistory)}`);
   return (
     <div className='flex items-center justify-center'>
       <div className='flex flex-col w-[500px] items-start space-y-10 border border-white pt-32'>
-
         <TravelHistory trips={travelHistory} userId={user.userId}/>
       </div>
     </div>
