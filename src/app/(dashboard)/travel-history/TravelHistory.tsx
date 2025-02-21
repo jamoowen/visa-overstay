@@ -5,6 +5,16 @@ import {SelectTrip} from "@/db/schema";
 import TravelHistoryForm from "@/app/(dashboard)/travel-history/TravelHistoryForm";
 import TravelHistoryList from "@/app/(dashboard)/travel-history/TravelHistoryList";
 
+// async function getTravelHistory(userId:number) {
+//   const response = await fetch(`/api/travel-history?userId=${userId}`, {
+//     method: "GET",
+//     headers: {"Content-Type": "application/json"},
+//     cache: 'force-cache',
+//     next: { tags: ['travel_history'] },
+//   });
+//   const data = await response.json();
+//   return data.travelHistory;
+// }
 
 export function TravelHistory({userId, trips}: {userId: number, trips: SelectTrip[]}) {
   if (!trips) {
@@ -17,8 +27,8 @@ export function TravelHistory({userId, trips}: {userId: number, trips: SelectTri
       <h2 className="text-2xl font-extrabold">
         Travel History
       </h2>
-      <TravelHistoryForm userId={userId} setTripsList={setTripsList} />
-      <TravelHistoryList trips={tripsList} setTripsList={setTripsList}/>
+      <TravelHistoryForm userId={userId} travelHistory={tripsList} setTravelHistory={setTripsList} />
+      <TravelHistoryList travelHistory={tripsList} setTravelHistory={setTripsList}/>
     </>
   );
 }

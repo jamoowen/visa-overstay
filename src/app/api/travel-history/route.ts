@@ -3,6 +3,7 @@ import {TravelHistoryDAO} from "@/dao/TravelHistoryDAO";
 import {auth} from "@/lib/auth";
 import {revalidateTag} from "next/cache";
 import {validateArgs} from "@/lib/api";
+import {worldCountries} from "public/data/world-countries"
 
 export async function GET(req: NextRequest) {
   const {searchParams} = new URL(req.url);
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
   }
   const trips = await TravelHistoryDAO.getTrips(userId);
   return NextResponse.json(
-    {trips: trips.unwrapOr([])},
+    {travelHistory: trips.unwrapOr([])},
     {status: 200}
   );
 }
@@ -31,6 +32,13 @@ export async function POST(req: NextRequest) {
       {status: 400}
     );
   }
+  const invalidCountry = !(country in worldCountries);
+  if (invalidCountry) {
+    return NextResponse.json(
+      {error: "Invalid country"},
+      {status: 400}
+    );
+  }
   const result = await TravelHistoryDAO.insertTrip({
     userId: args.value.userId,
     country: args.value.country,
@@ -42,11 +50,10 @@ export async function POST(req: NextRequest) {
       {status: 500}
     );
   }
-  revalidateTag('trips')
+  revalidateTag('travel_history')
   return new Response(null, {
     status: 201,
   })
-
 }
 
 export async function DELETE(req: NextRequest) {
@@ -69,7 +76,7 @@ export async function DELETE(req: NextRequest) {
       {status: 500}
     );
   }
-  revalidateTag('trips')
+  revalidateTag('travel_history')
   return new Response(null, {
     status: 204,
   })

@@ -14,11 +14,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {Button} from "@/components/ui/button";
-import {CrossIcon, XIcon} from "lucide-react";
+import { XIcon} from "lucide-react";
 
 
-export function TravelHistoryList({trips, setTripsList}: { trips: SelectTrip[], setTripsList: React.Dispatch<React.SetStateAction<SelectTrip[]>> }) {
-  if (!trips) {
+export function TravelHistoryList({travelHistory, setTravelHistory}: { travelHistory: SelectTrip[], setTravelHistory: React.Dispatch<React.SetStateAction<SelectTrip[]>> }) {
+  if (!travelHistory) {
     return null
   }
 
@@ -37,7 +37,7 @@ export function TravelHistoryList({trips, setTripsList}: { trips: SelectTrip[], 
       if (!response.ok) {
         throw new Error(`Error updating travel-history: ${response.statusText}`);
       }
-      setTripsList((previousTrips: SelectTrip[]) => {
+      setTravelHistory((previousTrips: SelectTrip[]) => {
         return previousTrips.filter(trip => trip.arrivalDate !== arrivalDate);
       });
       toast({
@@ -60,7 +60,7 @@ export function TravelHistoryList({trips, setTripsList}: { trips: SelectTrip[], 
     <>
       <div className="flex flex-col w-full border-white border h-[300px] items-start space-y-2  pt-5">
         {
-          trips.map((trip: SelectTrip) => {
+          travelHistory.map((trip: SelectTrip) => {
             return (
               <div key={trip.arrivalDate} className="flex flex-row justify-between border border-white w-full">
                 <Dialog>

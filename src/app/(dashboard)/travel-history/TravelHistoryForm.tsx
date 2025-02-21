@@ -59,22 +59,22 @@ const formatDate = (date: Date): string => {
     year: "numeric",
   });
 };
+const formatDateAsYMD = (date: Date): string => {
+  return date.toISOString().split("T")[0];
+}
 
 type CountryOption = {
   key: string;
   name: string;
 }
 
-export function TravelHistoryForm({userId, setTripsList}: { userId: number, setTripsList: React.Dispatch<React.SetStateAction<SelectTrip[]>> }) {
+export function TravelHistoryForm({userId, travelHistory, setTravelHistory}: { userId: number, travelHistory: SelectTrip[], setTravelHistory: React.Dispatch<React.SetStateAction<SelectTrip[]>> }) {
 
   const FormSchema = z
     .object({
       country: z
         .string()
-        .min(1, "Please select a country.")
-        .refine((value) => Object.keys(worldCountries).includes(value), {
-          message: "Selected country is not valid.",
-        }),
+        .min(1, "Please select a country."),
       arrivalDate: z
         .date({
           required_error: "Arrival date is required.",
@@ -85,7 +85,14 @@ export function TravelHistoryForm({userId, setTripsList}: { userId: number, setT
         })
         .refine((date) => date <= new Date(), {
           message: "Arrival date cannot be in the future.",
-        }),
+        })
+        .refine(
+          (date) => !travelHistory.some((trip) => trip.arrivalDate === formatDateAsYMD(date)),
+          {
+            message: "Arrival date has already been used in travel history.",
+          }
+        )
+      ,
       departureDate: z
         .date({
           required_error: "Departure date is required.",
@@ -96,7 +103,39 @@ export function TravelHistoryForm({userId, setTripsList}: { userId: number, setT
     .refine((data) => !data.departureDate || data.departureDate > data.arrivalDate, {
       message: "Departure date must be after arrival date.",
       path: ["departureDate"],
-    });
+    })
+    .refine((data) => tripCountryIsNotTheSameAsPreviousOrFollowingTrip(data), {
+      message: "Adjacent trips cannot be to the same country",
+      path: ["country"],
+    })
+  ;
+
+  // someone cant have the same country as the adjacent arrivalDate
+  const tripCountryIsNotTheSameAsPreviousOrFollowingTrip = (data: { country: string, arrivalDate: Date, departureDate?: Date | undefined }) => {
+    if (travelHistory.length === 0) {
+      return true;
+    }
+    if (travelHistory.length === 1) {
+      return data.country !== travelHistory[0].country;
+    }
+    for (let i = 0; i < travelHistory.length; i++) {
+      // travelHistory is sorted descending
+      // if the trip we are inserting is more recent then check if its neightbours are the same country
+      if (data.arrivalDate.getTime() > (new Date(travelHistory[i].arrivalDate)).getTime()) {
+        if (travelHistory[i].country === data.country) {
+          return false
+        }
+        if (i !== 0 && travelHistory[i - 1].country === data.country) {
+          return false
+        }
+        return true
+      }
+      if (travelHistory[i].country === data.country) {
+        return false
+      }
+    }
+    return true
+  }
 
   // Transform country data on mount
   useEffect(() => {
@@ -113,7 +152,7 @@ export function TravelHistoryForm({userId, setTripsList}: { userId: number, setT
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     setIsLoading(true)
-    console.log(`Form submitted: ${data.country}, ${data.arrivalDate}, ${data.departureDate}`);
+    console.log(`Form submitted: ${data.country}, ${data.arrivalDate}, ${formatDateAsYMD(data.arrivalDate)}`);
     if (!data.country || !data.arrivalDate) {
       console.log("Invalid arguments");
       return;
@@ -121,7 +160,7 @@ export function TravelHistoryForm({userId, setTripsList}: { userId: number, setT
     const newTrip: InsertTrip = {
       userId: userId,
       country: data.country,
-      arrivalDate: data.arrivalDate.toISOString().split("T")[0],
+      arrivalDate: formatDateAsYMD(data.arrivalDate),
       departureDate: null,
     }
     try {
@@ -133,7 +172,7 @@ export function TravelHistoryForm({userId, setTripsList}: { userId: number, setT
       if (!response.ok) {
         throw new Error(`Error updating travel-history: ${response.statusText}`);
       }
-      optimisticallyUpdateTripState(newTrip, setTripsList)
+      optimisticallyUpdateTripState(newTrip, setTravelHistory)
       toast({
         title: "Success!",
         description: "Your travel history has been updated successfully.",
@@ -163,7 +202,7 @@ export function TravelHistoryForm({userId, setTripsList}: { userId: number, setT
         <DialogTrigger asChild>
           <Button variant="outline">Add Trip</Button>
         </DialogTrigger>
-        <DialogContent  className="">
+        <DialogContent className="">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -203,7 +242,6 @@ export function TravelHistoryForm({userId, setTripsList}: { userId: number, setT
                                   value={country.name.toLowerCase()}
                                   key={country.key}
                                   onSelect={() => {
-                                    console.log(`CLICKING`);
                                     form.setValue("country", country.key);
                                     setIsCountriesOpen(false);
                                   }}
@@ -250,7 +288,7 @@ export function TravelHistoryForm({userId, setTripsList}: { userId: number, setT
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
-                          onDayClick={()=>setIsArrivalDateOpen(false)}
+                          onDayClick={() => setIsArrivalDateOpen(false)}
                           mode="single"
                           fromDate={EARLIEST_DATE}
                           selected={field.value}

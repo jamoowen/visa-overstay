@@ -11,8 +11,8 @@ const getTravelHistory = unstable_cache(
     console.log("getTravelHistory", userId)
     return (await TravelHistoryDAO.getTrips(userId)).unwrapOr([]);
   },
-  ['trips'],
-  { revalidate: 360000, tags: ['trips'] }
+  ['travel_history'],
+  { revalidate: 360000, tags: ['travel_history'] }
 )
 
 export default async function Page() {
