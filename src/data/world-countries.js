@@ -1,4 +1,4 @@
-export const worldCountries = {
+export const WorldCountries = {
   afghanistan: { name: "Afghanistan", continent: "Asia", eu: false },
   albania: { name: "Albania", continent: "Europe", eu: false },
   algeria: { name: "Algeria", continent: "Africa", eu: false },

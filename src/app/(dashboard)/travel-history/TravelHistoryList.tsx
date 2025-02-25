@@ -2,19 +2,18 @@
 
 import {useEffect, useState} from "react";
 import {InsertTrip, SelectTrip} from "@/db/schema";
-import {z} from "zod";
-import {optimisticallyUpdateTripState} from "@/app/(dashboard)/travel-history/lib/utils";
 import {toast} from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {Button} from "@/components/ui/button";
 import { XIcon} from "lucide-react";
+import {EnrichedTrip} from "@/types/travel";
+import {TravelHistoryService} from "@/services/travel-history-service";
 
 
 export function TravelHistoryList({travelHistory, setTravelHistory}: { travelHistory: SelectTrip[], setTravelHistory: React.Dispatch<React.SetStateAction<SelectTrip[]>> }) {
@@ -55,22 +54,28 @@ export function TravelHistoryList({travelHistory, setTravelHistory}: { travelHis
     setIsLoading(false);
   }
 
+  useEffect(() => {
+    setEnrichedTravelHistory(TravelHistoryService.enrichTripsWithCountryAndDurationData(travelHistory))
+  }, [travelHistory]);
+
+  const [enrichedTravelHistory, setEnrichedTravelHistory] = useState<EnrichedTrip[]>([]);
+
   const [isLoading, setIsLoading] = useState(false);
   return (
     <>
-      <div className="flex flex-col w-full border-white border h-[300px] items-start space-y-2  pt-5">
+      <div className="flex flex-col w-full border-white border h-[500px] overflow-auto items-start space-y-2  pt-5">
         {
-          travelHistory.map((trip: SelectTrip) => {
+          enrichedTravelHistory.map((trip: EnrichedTrip, index) => {
             return (
               <div key={trip.arrivalDate} className="flex flex-row justify-between border border-white w-full">
                 <Dialog>
                   <div className=" rounded-md p-2  -h items-start flex flex-col min-w-[200px]">
-                    <h3>
-                      {trip.country}
+                    <h3 className="flex justify-between w-full">
+                      {trip.countryName} {index===0 && <span className="text-green-500 text-xs ml-10">current</span>}
                     </h3>
                     <span className="text-sm ">Arrival date: {trip.arrivalDate} </span>
                     {/*<span className="text-sm ">Departure: {3} days</span>*/}
-                    {/*<span className="text-sm ">Duration: {3} days </span>*/}
+                    {trip.duration && <span className="text-sm ">Duration: {trip.duration} days </span>}
                   </div>
                   <DialogTrigger>
                    <XIcon className="hover:text-red-600"/>

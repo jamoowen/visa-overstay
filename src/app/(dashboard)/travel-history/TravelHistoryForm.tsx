@@ -31,24 +31,17 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {Calendar} from "@/components/ui/calendar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+
 
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {worldCountries} from "public/data/world-countries"
+import {WorldCountries} from "@/data/world-countries"
 import {InsertTrip, SelectTrip} from "@/db/schema";
 import {optimisticallyUpdateTripState} from "@/app/(dashboard)/travel-history/lib/utils";
+import {tripCountryIsNotTheSameAsPreviousOrFollowingTrip} from "@/lib/validation";
 
 const EARLIEST_DATE = new Date("2015-01-01")
 
@@ -104,42 +97,15 @@ export function TravelHistoryForm({userId, travelHistory, setTravelHistory}: { u
       message: "Departure date must be after arrival date.",
       path: ["departureDate"],
     })
-    .refine((data) => tripCountryIsNotTheSameAsPreviousOrFollowingTrip(data), {
+    .refine((data) => tripCountryIsNotTheSameAsPreviousOrFollowingTrip(data, travelHistory), {
       message: "Adjacent trips cannot be to the same country",
       path: ["country"],
     })
   ;
-
   // someone cant have the same country as the adjacent arrivalDate
-  const tripCountryIsNotTheSameAsPreviousOrFollowingTrip = (data: { country: string, arrivalDate: Date, departureDate?: Date | undefined }) => {
-    if (travelHistory.length === 0) {
-      return true;
-    }
-    if (travelHistory.length === 1) {
-      return data.country !== travelHistory[0].country;
-    }
-    for (let i = 0; i < travelHistory.length; i++) {
-      // travelHistory is sorted descending
-      // if the trip we are inserting is more recent then check if its neightbours are the same country
-      if (data.arrivalDate.getTime() > (new Date(travelHistory[i].arrivalDate)).getTime()) {
-        if (travelHistory[i].country === data.country) {
-          return false
-        }
-        if (i !== 0 && travelHistory[i - 1].country === data.country) {
-          return false
-        }
-        return true
-      }
-      if (travelHistory[i].country === data.country) {
-        return false
-      }
-    }
-    return true
-  }
-
   // Transform country data on mount
   useEffect(() => {
-    const options = Object.entries(worldCountries).map(([key, country]) => ({
+    const options = Object.entries(WorldCountries).map(([key, country]) => ({
       key,
       name: country.name
     }));
@@ -224,7 +190,7 @@ export function TravelHistoryForm({userId, travelHistory, setTravelHistory}: { u
                             )}
                           >
                             {field.value
-                              ? worldCountries[field.value as keyof typeof worldCountries].name
+                              ? WorldCountries[field.value as keyof typeof WorldCountries].name
                               : "Select country"}
                             <ChevronsUpDown className="opacity-50"/>
                           </Button>

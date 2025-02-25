@@ -3,7 +3,7 @@ import {TravelHistoryDAO} from "@/dao/TravelHistoryDAO";
 import {auth} from "@/lib/auth";
 import {revalidateTag} from "next/cache";
 import {validateArgs} from "@/lib/api";
-import {worldCountries} from "public/data/world-countries"
+import {WorldCountries} from "@/data/world-countries"
 
 export async function GET(req: NextRequest) {
   const {searchParams} = new URL(req.url);
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       {status: 400}
     );
   }
-  const invalidCountry = !(country in worldCountries);
+  const invalidCountry = !(country in WorldCountries);
   if (invalidCountry) {
     return NextResponse.json(
       {error: "Invalid country"},
