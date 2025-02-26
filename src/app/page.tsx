@@ -31,7 +31,7 @@ export default async function Page() {
           and hopefully prevent their asses from getting deported.
         </span>
         <span>
-          Just enter your past departure dates and the country you found yourself in.
+          Just enter your past arrival dates and the country you found yourself in.
           With a little quick maths, I'll break down your tenure and determine whether
           you are at risk of breaching the terms of your visa. 🫨
         </span>
@@ -39,7 +39,7 @@ export default async function Page() {
         <span className="text-xs text-opacity-50">
           PS: Dont take my advice as gospel - im just some random dude on the internet
           and do NOT specialise in immigration law. <br/>
-          PSS: Im taking my own advice so if its any consolation.
+          PSS: Im taking my own advice.
         </span>
       </div>
     </div>

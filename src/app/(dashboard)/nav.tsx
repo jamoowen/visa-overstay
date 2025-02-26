@@ -46,6 +46,18 @@ export default function NavBar({user, onSignOut}: {
                Travel History
               </Link>
             </li>
+            <li>
+              <Link
+                onClick={() => setActivePath('/visa-regulations')}
+                href="/visa-regulations"
+                className={cn(
+                  activePath === '/visa-regulations' && 'underline',
+                  'text-purple-600 dark:text-purple-400 font-semibold'
+                )}
+              >
+              Visa Regulations
+              </Link>
+            </li>
           </ul>
         </div>
 
