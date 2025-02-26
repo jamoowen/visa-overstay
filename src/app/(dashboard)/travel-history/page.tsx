@@ -24,7 +24,7 @@ export default async function Page() {
 
   return (
     <div className='flex items-center justify-center'>
-      <div className='flex flex-col w-[500px] items-start space-y-10 border border-white pt-32'>
+      <div className='flex flex-col w-[500px] items-start space-y-10  pt-32'>
         <TravelHistory trips={travelHistory} userId={user.userId}/>
       </div>
     </div>

@@ -12,11 +12,13 @@ import {
 } from "@/components/ui/dialog"
 import {Button} from "@/components/ui/button";
 import { XIcon} from "lucide-react";
-import {EnrichedTrip} from "@/types/travel";
+import { DaysSpentTravelling, EnrichedTrip } from "@/types/travel";
 import {TravelHistoryService} from "@/services/travel-history-service";
 
 
 export function TravelHistoryList({travelHistory, setTravelHistory}: { travelHistory: SelectTrip[], setTravelHistory: React.Dispatch<React.SetStateAction<SelectTrip[]>> }) {
+  const travelHistoryService = new TravelHistoryService();
+
   if (!travelHistory) {
     return null
   }
@@ -55,24 +57,32 @@ export function TravelHistoryList({travelHistory, setTravelHistory}: { travelHis
   }
 
   useEffect(() => {
-    const enrichedTrips = TravelHistoryService.enrichTripsWithCountryAndDurationData(travelHistory);
+    const enrichedTrips = travelHistoryService.enrichTripsWithCountryAndDurationData(travelHistory);
+    const daysSpent = travelHistoryService.calculateDaysSpentTravelling(
+      travelHistoryService.cutoffTripsAtTwelveMonths(new Date, enrichedTrips)
+    )
     setEnrichedTravelHistory(enrichedTrips);
+    setDaysSpentTravelling(daysSpent);
   }, [travelHistory]);
 
   const [enrichedTravelHistory, setEnrichedTravelHistory] = useState<EnrichedTrip[]>([]);
-  const [daysOutsideOfUkInLast12Months, setdaysOutsideOfUkInLast12Months] = useState<number>(0);
+  const [daysSpentTravelling, setDaysSpentTravelling] = useState<DaysSpentTravelling | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
+  if (daysSpentTravelling==null) return null;
   return (
-    <>
-      <h3>
-        Days spent outside of UK in last 12 months: {daysOutsideOfUkInLast12Months}
-      </h3>
-      <div className="flex flex-col w-full border-white border h-[500px] overflow-auto items-start space-y-2  pt-5">
+    <div className="flex flex-col">
+      <span>
+        Days spent outside of UK in last 12 months: {daysSpentTravelling.daysSpentOutsideUK}
+      </span>
+      <span>
+        Days spent in Europe in the last 12 months: {daysSpentTravelling.daysSpentInEU}
+      </span>
+      <div className="flex flex-col w-full mt-5  h-[500px] border-t-2 border-white py-5 no-scrollbar overflow-auto items-start space-y-2  pt-5">
         {
           enrichedTravelHistory.map((trip: EnrichedTrip, index) => {
             return (
-              <div key={trip.arrivalDate} className="flex flex-row justify-between border border-white w-full">
+              <div key={trip.arrivalDate} className="flex flex-row justify-between  w-full">
                 <Dialog>
                   <div className=" rounded-md p-2  -h items-start flex flex-col min-w-[200px]">
                     <h3 className="flex justify-between w-full">
@@ -105,7 +115,7 @@ export function TravelHistoryList({travelHistory, setTravelHistory}: { travelHis
           })
         }
       </div>
-    </>
+    </div>
   );
 }
 

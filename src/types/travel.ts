@@ -13,10 +13,16 @@ export type WorldCountriesMap = Record<WorldCountryKey, WorldCountry>;
 
 
 export type EnrichedTrip = {
-  country: string;
+  country: WorldCountryKey;
   countryName: string;
   arrivalDate: string;
   duration: number;
   isEuTrip: boolean;
   continent: string;
+}
+
+export type DaysSpentTravelling = {
+  daysSpentInEU: number;
+  daysSpentOutsideUK: number;
+  daysSpentOutsideHomeCountry?: number;
 }

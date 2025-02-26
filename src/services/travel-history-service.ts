@@ -1,20 +1,24 @@
-import {SelectTrip} from "@/db/schema";
-import {WorldCountries} from "@/data/world-countries.js";
-import {EnrichedTrip, WorldCountryKey} from "@/types/travel";
+import { SelectTrip } from "@/db/schema";
+import { WorldCountries } from "@/data/world-countries.js";
+import { DaysSpentTravelling, EnrichedTrip, WorldCountryKey } from "@/types/travel";
 import { DateUtils } from "@/lib/date-utils";
 
-export class TravelHistoryService {
+export interface TravelHistoryProcessor {
+  enrichTripsWithCountryAndDurationData(allTrips: SelectTrip[]): EnrichedTrip[];
+  cutoffTripsAtTwelveMonths(today: Date, trips: EnrichedTrip[]): EnrichedTrip[];
+  calculateDaysSpentTravelling(trips: EnrichedTrip[], homeCountry?: WorldCountryKey): DaysSpentTravelling;
+}
 
-
-  static enrichTripsWithCountryAndDurationData(allTrips: SelectTrip[]): EnrichedTrip[] {
+export class TravelHistoryService implements TravelHistoryProcessor{
+  public enrichTripsWithCountryAndDurationData(allTrips: SelectTrip[]): EnrichedTrip[] {
     //assuming alltrips is sorted in descending order
     const enrichedTrips = allTrips.map((trip, index) => {
       const country = WorldCountries[trip.country as WorldCountryKey];
-      const duration = index > 0 && allTrips.length>1
+      const duration = index > 0 && allTrips.length > 1
         ? DateUtils.calculateAbsoluteDateDifferenceInDays(new Date(allTrips[index].arrivalDate), new Date(allTrips[index - 1].arrivalDate))
-        : DateUtils.calculateAbsoluteDateDifferenceInDays(new Date(allTrips[index].arrivalDate), new Date())
+        : DateUtils.calculateAbsoluteDateDifferenceInDays(new Date(allTrips[index].arrivalDate), DateUtils.getFloorOfDate(new Date()))
       const enrichedTrip: EnrichedTrip = {
-        country: trip.country,
+        country: trip.country as WorldCountryKey,
         countryName: country.name,
         arrivalDate: trip.arrivalDate,
         duration: duration,
@@ -26,28 +30,43 @@ export class TravelHistoryService {
     return enrichedTrips;
   }
 
-  /*
-  * @todo days outiside of uk in 12 month rolling period
-  * @todo days in eu in 12 month rolling period
-  * @todo consecutive days?
-  * @todo
-  * */
-  // need to cut off the tip data at 12 months
-  // need some date functions
-  static cutoffTripsAtTwelveMonths(trips: EnrichedTrip[]) {
-    const today = new Date();
-    const twelveMonthsAgo = today.setFullYear(today.getFullYear() - 1);
-    if (trips.length===0) return [];
-    for (let i = 0; i <= trips.length; i++) {
+  public cutoffTripsAtTwelveMonths(today: Date, trips: EnrichedTrip[]): EnrichedTrip[] {
+    const currentYMD = DateUtils.getFloorOfDate(today);
+    const twelveMonthsAgo = new Date(currentYMD.getFullYear() - 1, currentYMD.getMonth(), currentYMD.getDate());
+    const modifiedTrips: EnrichedTrip[] = [];
+    for (let i = 0; i < trips.length; i++) {
       const arrivalDate = new Date(trips[i].arrivalDate);
-      if (arrivalDate.getTime()<twelveMonthsAgo) {
-        // in this scenario we need to subtract from the duration the difference between 12 months ago and arrivalDate
+      if (arrivalDate.getTime() >= twelveMonthsAgo.getTime()) {
+        modifiedTrips.push(trips[i]);
+        continue;
       }
+      const dateDiff = DateUtils.calculateAbsoluteDateDifferenceInDays(arrivalDate, twelveMonthsAgo);
+      console.log(`date diff: ${dateDiff} for ${i} `);
+      if (dateDiff > trips[i].duration) {
+        break;
+      }
+      modifiedTrips.push({
+        ...trips[i],
+        duration: dateDiff
+      })
+      break;
     }
-
-    const daysOutsideOfUkInLast12Months= trips.reduce((acc, trip)=> {
-      if (trip.country==="unitedKingdom") {acc+=trip.duration}
-      return acc;
-    }, 0)
+    return modifiedTrips;
   }
+
+  public calculateDaysSpentTravelling(trips: EnrichedTrip[], homeCountry?:WorldCountryKey): DaysSpentTravelling {
+    const daysSpentObject: DaysSpentTravelling = {
+      daysSpentInEU: 0,
+      daysSpentOutsideUK: 0,
+      ...(homeCountry ? { daysSpentOutsideHomeCountry: 0 } : {})
+    }
+    return trips.reduce((acc,trip)=> {
+      if (trip.isEuTrip) acc['daysSpentInEU']+=trip.duration;
+      if (trip.country!=='unitedKingdom') acc['daysSpentOutsideUK'] += trip.duration;
+      if (acc['daysSpentOutsideHomeCountry'] && trip.country!==homeCountry) acc['daysSpentOutsideHomeCountry'] += trip.duration;
+      return acc;
+    }, daysSpentObject)
+
+  }
+
 }

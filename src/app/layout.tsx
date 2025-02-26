@@ -15,7 +15,7 @@ export default function RootLayout({children}: {
     <>
     <html lang="en">
     <head title={'visa overstay checker'}/>
-    <body>
+    <body className="dark flex min-h-screen p-2 w-full flex-col">
     <main>{children}</main>
     <Toaster/>
     </body>
