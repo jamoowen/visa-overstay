@@ -39,3 +39,7 @@ next-env.d.ts
 
 #ide
 .idea
+.vscode
+commands.txt
+
+DONT_UPLOAD.md
