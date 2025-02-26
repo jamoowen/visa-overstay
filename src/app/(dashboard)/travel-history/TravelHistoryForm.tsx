@@ -42,19 +42,11 @@ import {WorldCountries} from "@/data/world-countries"
 import {InsertTrip, SelectTrip} from "@/db/schema";
 import {optimisticallyUpdateTripState} from "@/app/(dashboard)/travel-history/lib/utils";
 import {tripCountryIsNotTheSameAsPreviousOrFollowingTrip} from "@/lib/validation";
+import { DateUtils } from "@/lib/date-utils";
 
 const EARLIEST_DATE = new Date("2015-01-01")
 
-const formatDate = (date: Date): string => {
-  return date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
-const formatDateAsYMD = (date: Date): string => {
-  return date.toISOString().split("T")[0];
-}
+
 
 type CountryOption = {
   key: string;
@@ -80,7 +72,7 @@ export function TravelHistoryForm({userId, travelHistory, setTravelHistory}: { u
           message: "Arrival date cannot be in the future.",
         })
         .refine(
-          (date) => !travelHistory.some((trip) => trip.arrivalDate === formatDateAsYMD(date)),
+          (date) => !travelHistory.some((trip) => trip.arrivalDate === DateUtils.formatDateAsYMD(date)),
           {
             message: "Arrival date has already been used in travel history.",
           }
@@ -118,7 +110,7 @@ export function TravelHistoryForm({userId, travelHistory, setTravelHistory}: { u
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     setIsLoading(true)
-    console.log(`Form submitted: ${data.country}, ${data.arrivalDate}, ${formatDateAsYMD(data.arrivalDate)}`);
+    console.log(`Form submitted: ${data.country}, ${data.arrivalDate}, ${DateUtils.formatDateAsYMD(data.arrivalDate)}`);
     if (!data.country || !data.arrivalDate) {
       console.log("Invalid arguments");
       return;
@@ -126,7 +118,7 @@ export function TravelHistoryForm({userId, travelHistory, setTravelHistory}: { u
     const newTrip: InsertTrip = {
       userId: userId,
       country: data.country,
-      arrivalDate: formatDateAsYMD(data.arrivalDate),
+      arrivalDate: DateUtils.formatDateAsYMD(data.arrivalDate),
       departureDate: null,
     }
     try {
@@ -244,7 +236,7 @@ export function TravelHistoryForm({userId, travelHistory, setTravelHistory}: { u
                             )}
                           >
                             {field.value ? (
-                              formatDate(field.value)
+                              DateUtils.formatDateAsUkReadableString(field.value)
                             ) : (
                               <span>Pick a date</span>
                             )}

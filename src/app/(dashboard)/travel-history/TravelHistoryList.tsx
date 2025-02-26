@@ -55,14 +55,19 @@ export function TravelHistoryList({travelHistory, setTravelHistory}: { travelHis
   }
 
   useEffect(() => {
-    setEnrichedTravelHistory(TravelHistoryService.enrichTripsWithCountryAndDurationData(travelHistory))
+    const enrichedTrips = TravelHistoryService.enrichTripsWithCountryAndDurationData(travelHistory);
+    setEnrichedTravelHistory(enrichedTrips);
   }, [travelHistory]);
 
   const [enrichedTravelHistory, setEnrichedTravelHistory] = useState<EnrichedTrip[]>([]);
+  const [daysOutsideOfUkInLast12Months, setdaysOutsideOfUkInLast12Months] = useState<number>(0);
 
   const [isLoading, setIsLoading] = useState(false);
   return (
     <>
+      <h3>
+        Days spent outside of UK in last 12 months: {daysOutsideOfUkInLast12Months}
+      </h3>
       <div className="flex flex-col w-full border-white border h-[500px] overflow-auto items-start space-y-2  pt-5">
         {
           enrichedTravelHistory.map((trip: EnrichedTrip, index) => {

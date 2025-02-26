@@ -16,7 +16,7 @@ export type EnrichedTrip = {
   country: string;
   countryName: string;
   arrivalDate: string;
-  duration?: number;
+  duration: number;
   isEuTrip: boolean;
   continent: string;
 }
