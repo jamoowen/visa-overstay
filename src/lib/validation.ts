@@ -21,7 +21,7 @@ export const tripCountryIsNotTheSameAsPreviousOrFollowingTrip = (data: { country
       return true
     }
   }
-  if (travelHistory[travelHistory.length].country === data.country) {
+  if (travelHistory[travelHistory.length-1].country === data.country) {
     return false
   }
   return true

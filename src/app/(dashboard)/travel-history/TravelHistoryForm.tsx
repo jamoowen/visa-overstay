@@ -110,7 +110,6 @@ export function TravelHistoryForm({userId, travelHistory, setTravelHistory}: { u
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     setIsLoading(true)
-    console.log(`Form submitted: ${data.country}, ${data.arrivalDate}, ${DateUtils.formatDateAsYMD(data.arrivalDate)}`);
     if (!data.country || !data.arrivalDate) {
       console.log("Invalid arguments");
       return;
@@ -156,7 +155,10 @@ export function TravelHistoryForm({userId, travelHistory, setTravelHistory}: { u
 
   return (
     <>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={()=> {
+        setIsDialogOpen(!isDialogOpen);
+        form.reset()
+      }}>
         <DialogTrigger asChild>
           <Button variant="outline">Add Trip</Button>
         </DialogTrigger>
@@ -169,7 +171,10 @@ export function TravelHistoryForm({userId, travelHistory, setTravelHistory}: { u
                 render={({field}) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Country</FormLabel>
-                    <Popover open={isCountriesOpen} onOpenChange={setIsCountriesOpen}>
+                    <Popover open={isCountriesOpen}  onOpenChange={()=> {
+                      setIsCountriesOpen(!isCountriesOpen);
+
+                    }}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button

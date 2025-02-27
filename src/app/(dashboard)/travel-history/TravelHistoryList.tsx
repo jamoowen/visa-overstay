@@ -1,8 +1,8 @@
 "use client";
 
-import {useEffect, useState} from "react";
-import {InsertTrip, SelectTrip} from "@/db/schema";
-import {toast} from "@/hooks/use-toast";
+import { useEffect, useState, useMemo } from "react";
+import { InsertTrip, SelectTrip } from "@/db/schema";
+import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -10,13 +10,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {Button} from "@/components/ui/button";
-import { XIcon} from "lucide-react";
-import { DaysSpentTravelling, EnrichedTrip } from "@/types/travel";
-import {TravelHistoryService} from "@/services/travel-history-service";
+import { Button } from "@/components/ui/button";
+import { ChevronsUpDown, XIcon } from "lucide-react";
+import { DaysSpentTravelling, EnrichedTrip, WorldCountryKey } from "@/types/travel";
+import { TravelHistoryService } from "@/services/travel-history-service";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { FormControl } from "@/components/ui/form";
+import { cn } from "@/lib/utils";
+import { WorldCountries } from "@/data/world-countries";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { DateUtils } from "@/lib/date-utils";
 
+type CountryOption = {
+  key: WorldCountryKey;
+  name: string;
+}
 
-export function TravelHistoryList({travelHistory, setTravelHistory}: { travelHistory: SelectTrip[], setTravelHistory: React.Dispatch<React.SetStateAction<SelectTrip[]>> }) {
+export function TravelHistoryList({ travelHistory, setTravelHistory }: { travelHistory: SelectTrip[], setTravelHistory: React.Dispatch<React.SetStateAction<SelectTrip[]>> }) {
   const travelHistoryService = new TravelHistoryService();
 
   if (!travelHistory) {
@@ -32,8 +42,8 @@ export function TravelHistoryList({travelHistory, setTravelHistory}: { travelHis
     try {
       const response = await fetch(`/api/travel-history`, {
         method: "DELETE",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({arrivalDate}),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ arrivalDate }),
       });
       if (!response.ok) {
         throw new Error(`Error updating travel-history: ${response.statusText}`);
@@ -56,29 +66,91 @@ export function TravelHistoryList({travelHistory, setTravelHistory}: { travelHis
     setIsLoading(false);
   }
 
-  useEffect(() => {
-    const enrichedTrips = travelHistoryService.enrichTripsWithCountryAndDurationData(travelHistory);
-    const daysSpent = travelHistoryService.calculateDaysSpentTravelling(
-      travelHistoryService.cutoffTripsAtTwelveMonths(new Date, enrichedTrips)
-    )
-    setEnrichedTravelHistory(enrichedTrips);
-    setDaysSpentTravelling(daysSpent);
-  }, [travelHistory]);
 
   const [enrichedTravelHistory, setEnrichedTravelHistory] = useState<EnrichedTrip[]>([]);
-  const [daysSpentTravelling, setDaysSpentTravelling] = useState<DaysSpentTravelling | null>(null);
-
+  const [countryOptions, setCountryOptions] = useState<{ key: WorldCountryKey; name: string }[]>([]);
+  const [isCountriesOpen, setIsCountriesOpen] = useState(false);
+  const [homeCountry, setHomeCountry] = useState<CountryOption | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  if (daysSpentTravelling==null) return null;
+
+
+  useEffect(() => {
+    const options = Object.entries(WorldCountries).map(([key, country]) => ({
+      key: key as WorldCountryKey,
+      name: country.name
+    }));
+    setCountryOptions(options);
+  }, []);
+
+  useEffect(() => {
+    setEnrichedTravelHistory(travelHistoryService.enrichTripsWithCountryAndDurationData(travelHistory));
+  }, [travelHistory]);
+
+
+  const daysSpentTravelling: DaysSpentTravelling | null = useMemo(() => {
+    if (!enrichedTravelHistory) return null;
+    const today = DateUtils.getFloorOfDate(new Date)
+    const cutoffTrips = travelHistoryService.cutoffTripsAtTwelveMonths(today, enrichedTravelHistory);
+    return travelHistoryService.calculateDaysSpentTravelling(today, cutoffTrips, homeCountry?.key);
+  }, [enrichedTravelHistory, homeCountry?.key]);
+
+  if (daysSpentTravelling == null) return null;
   return (
     <div className="flex flex-col">
+      <Popover open={isCountriesOpen} onOpenChange={setIsCountriesOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={isCountriesOpen}
+            className={cn(
+              "w-[200px] justify-between cursor-pointer",
+              !homeCountry && "text-muted-foreground"
+            )}
+          >
+            {homeCountry
+              ? homeCountry.name
+              : "Select home country"}
+            <ChevronsUpDown className="opacity-50"/>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-0">
+          <Command>
+            <CommandInput placeholder="Search country..." className="h-9"/>
+            <CommandList>
+              <CommandEmpty>No country found.</CommandEmpty>
+              <CommandGroup>
+                {countryOptions.map((country) => (
+                  <CommandItem
+                    className='cursor-pointer'
+                    value={country.name.toLowerCase()}
+                    key={country.key}
+                    onSelect={() => {
+                      setHomeCountry({key:country.key as WorldCountryKey, name:country.name})
+                      setIsCountriesOpen(false);
+                    }}
+                  >
+                    {country.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+        <span className='text-sm text-muted-foreground p-1'>Your home country or a country you would like to compare against.</span>
+        <span className='text-sm text-muted-foreground p-1 mb-5'>If your first trip is within the last 12 months we assume you were living here previously.</span>
+      </Popover>
       <span>
         Days spent outside of UK in last 12 months: {daysSpentTravelling.daysSpentOutsideUK}
       </span>
       <span>
         Days spent in Europe in the last 12 months: {daysSpentTravelling.daysSpentInEU}
       </span>
-      <div className="flex flex-col w-full mt-5  h-[500px] border-t-2 border-white py-5 no-scrollbar overflow-auto items-start space-y-2  pt-5">
+        <span>
+      {homeCountry && <>Days spent outside of {homeCountry.name} in the last 12 months: {daysSpentTravelling.daysSpentOutsideHomeCountry}</>}
+      </span>
+      <div
+        className="flex flex-col w-full mt-5  h-[500px] border-t-2 border-white py-5 no-scrollbar overflow-auto items-start space-y-2  pt-5">
         {
           enrichedTravelHistory.map((trip: EnrichedTrip, index) => {
             return (
@@ -86,14 +158,14 @@ export function TravelHistoryList({travelHistory, setTravelHistory}: { travelHis
                 <Dialog>
                   <div className=" rounded-md p-2  -h items-start flex flex-col min-w-[200px]">
                     <h3 className="flex justify-between w-full">
-                      {trip.countryName} {index===0 && <span className="text-green-500 text-xs ml-10">current</span>}
+                      {trip.countryName} {index === 0 && <span className="text-green-500 text-xs ml-10">current</span>}
                     </h3>
                     <span className="text-sm ">Arrival date: {trip.arrivalDate} </span>
                     {/*<span className="text-sm ">Departure: {3} days</span>*/}
                     {trip.duration && <span className="text-sm ">Duration: {trip.duration} days </span>}
                   </div>
                   <DialogTrigger>
-                   <XIcon className="hover:text-red-600"/>
+                    <XIcon className="hover:text-red-600"/>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -107,7 +179,7 @@ export function TravelHistoryList({travelHistory, setTravelHistory}: { travelHis
                         {/*<span className="text-sm ">Duration: {3} days </span>*/}
                       </div>
                     </DialogHeader>
-                    <Button disabled={isLoading} onClick={()=>handleDelete(trip.arrivalDate)}>Delete</Button>
+                    <Button disabled={isLoading} onClick={() => handleDelete(trip.arrivalDate)}>Delete</Button>
                   </DialogContent>
                 </Dialog>
               </div>
