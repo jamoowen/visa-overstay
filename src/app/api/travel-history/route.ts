@@ -61,7 +61,6 @@ export async function DELETE(req: NextRequest) {
   const user = session?.user;
   const {arrivalDate} = await req.json();
   const args = validateArgs({userId: user?.userId, arrivalDate});
-  console.log(args)
   if (args.isErr()) {
     return NextResponse.json(
       {error: args.error.message},
@@ -69,7 +68,6 @@ export async function DELETE(req: NextRequest) {
     );
   }
   const result = await TravelHistoryDAO.deleteTrip(args.value.userId, args.value.arrivalDate);
-  console.log(result)
   if (result.isErr()) {
     return NextResponse.json(
       {error: result.error.message},

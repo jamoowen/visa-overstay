@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { InsertTrip, SelectTrip } from "@/db/schema";
+import {  SelectTrip } from "@/db/schema";
 import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -12,19 +12,15 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button";
 import { ChevronsUpDown, XIcon } from "lucide-react";
-import { DaysSpentTravelling, EnrichedTrip, WorldCountryKey } from "@/types/travel";
-import { TravelHistoryService } from "@/services/travel-history-service";
+import { CountryOption, DaysSpentTravellingForPeriods, EnrichedTrip, WorldCountryKey } from "@/types/travel";
+import { TravelHistoryService } from "@/services/TravelHistoryService";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { FormControl } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { WorldCountries } from "@/data/world-countries";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { DateUtils } from "@/lib/date-utils";
+import DaysSpentTravellingOverview from "@/app/(dashboard)/travel-history/DaysSpentTravellingOverview";
 
-type CountryOption = {
-  key: WorldCountryKey;
-  name: string;
-}
 
 export function TravelHistoryList({ travelHistory, setTravelHistory }: { travelHistory: SelectTrip[], setTravelHistory: React.Dispatch<React.SetStateAction<SelectTrip[]>> }) {
   const travelHistoryService = new TravelHistoryService();
@@ -87,11 +83,19 @@ export function TravelHistoryList({ travelHistory, setTravelHistory }: { travelH
   }, [travelHistory]);
 
 
-  const daysSpentTravelling: DaysSpentTravelling | null = useMemo(() => {
+  const daysSpentTravelling: DaysSpentTravellingForPeriods = useMemo(() => {
     if (!enrichedTravelHistory) return null;
     const today = DateUtils.getFloorOfDate(new Date)
-    const cutoffTrips = travelHistoryService.cutoffTripsAtTwelveMonths(today, enrichedTravelHistory);
-    return travelHistoryService.calculateDaysSpentTravelling(today, cutoffTrips, homeCountry?.key);
+    const tripsCutoffAt12Months = travelHistoryService.cutoffTripsAtGivenPeriod(today, { months: 12 }, enrichedTravelHistory);
+    const tripsCutoffAt180Days = travelHistoryService.cutoffTripsAtGivenPeriod(today, { days: 180 }, enrichedTravelHistory);
+
+    const twelveMonthsAgoInDays = DateUtils.calculateAbsoluteDateDifferenceInDays(today, DateUtils.addYearsToDate(today, -1));
+    const travelHistoryForPastTwelveMonths = travelHistoryService.calculateDaysSpentTravelling(twelveMonthsAgoInDays-1, tripsCutoffAt12Months, homeCountry?.key);
+    const travelHistoryForPast180Days = travelHistoryService.calculateDaysSpentTravelling(180, tripsCutoffAt180Days, homeCountry?.key);
+    return {
+      travelHistoryForPastTwelveMonths,
+      travelHistoryForPast180Days
+    }
   }, [enrichedTravelHistory, homeCountry?.key]);
 
   if (daysSpentTravelling == null) return null;
@@ -126,7 +130,7 @@ export function TravelHistoryList({ travelHistory, setTravelHistory }: { travelH
                     value={country.name.toLowerCase()}
                     key={country.key}
                     onSelect={() => {
-                      setHomeCountry({key:country.key as WorldCountryKey, name:country.name})
+                      setHomeCountry({ key: country.key as WorldCountryKey, name: country.name })
                       setIsCountriesOpen(false);
                     }}
                   >
@@ -140,15 +144,7 @@ export function TravelHistoryList({ travelHistory, setTravelHistory }: { travelH
         <span className='text-sm text-muted-foreground p-1'>Your home country or a country you would like to compare against.</span>
         <span className='text-sm text-muted-foreground p-1 mb-5'>If your first trip is within the last 12 months we assume you were living here previously.</span>
       </Popover>
-      <span>
-        Days spent outside of UK in last 12 months: {daysSpentTravelling.daysSpentOutsideUK}
-      </span>
-      <span>
-        Days spent in Europe in the last 12 months: {daysSpentTravelling.daysSpentInEU}
-      </span>
-        <span>
-      {homeCountry && <>Days spent outside of {homeCountry.name} in the last 12 months: {daysSpentTravelling.daysSpentOutsideHomeCountry}</>}
-      </span>
+      <DaysSpentTravellingOverview daysSpentTravelling={daysSpentTravelling} homeCountry={homeCountry} />
       <div
         className="flex flex-col w-full mt-5  h-[500px] border-t-2 border-white py-5 no-scrollbar overflow-auto items-start space-y-2  pt-5">
         {

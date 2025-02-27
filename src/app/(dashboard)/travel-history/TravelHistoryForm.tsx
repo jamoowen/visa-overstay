@@ -111,7 +111,7 @@ export function TravelHistoryForm({userId, travelHistory, setTravelHistory}: { u
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     setIsLoading(true)
     if (!data.country || !data.arrivalDate) {
-      console.log("Invalid arguments");
+      console.error("Invalid arguments");
       return;
     }
     const newTrip: InsertTrip = {

@@ -1,4 +1,4 @@
-import {WorldCountries} from "@/data/world-countries";
+import { WorldCountries } from "@/data/world-countries";
 
 
 export type WorldCountryKey = keyof typeof WorldCountries;
@@ -11,6 +11,10 @@ export type WorldCountry = {
 
 export type WorldCountriesMap = Record<WorldCountryKey, WorldCountry>;
 
+export type CountryOption = {
+  key: WorldCountryKey;
+  name: string;
+}
 
 export type EnrichedTrip = {
   country: WorldCountryKey;
@@ -21,8 +25,19 @@ export type EnrichedTrip = {
   continent: string;
 }
 
+
+export type CutoffPeriod = { days: number } | { months: number };
+
+
 export type DaysSpentTravelling = {
-  daysSpentInEU: number;
+  daysSpentInsideEU: number;
+  daysSpentOutsideEU: number;
+  daysSpentInsideUK: number;
   daysSpentOutsideUK: number;
+  daysSpentInsideHomeCountry?: number;
   daysSpentOutsideHomeCountry?: number;
 }
+
+export type DaysSpentTravellingForPeriods =
+  Record<"travelHistoryForPastTwelveMonths" | "travelHistoryForPast180Days", DaysSpentTravelling>
+  | null

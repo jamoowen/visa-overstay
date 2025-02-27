@@ -1,4 +1,4 @@
-import {TravelHistoryService} from "./travel-history-service";
+import {TravelHistoryService} from "./TravelHistoryService";
 import {SelectTrip} from "@/db/schema";
 import {describe, it, expect, test} from "@jest/globals";
 import {WorldCountryKey} from "@/types/travel";
