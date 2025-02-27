@@ -1,5 +1,4 @@
 import {auth} from "@/lib/auth";
-import TravelHistoryForm from "@/app/(dashboard)/travel-history/TravelHistoryForm";
 import {TravelHistoryDAO} from "@/dao/TravelHistoryDAO";
 import {unstable_cache} from 'next/cache'
 import TravelHistory from "@/app/(dashboard)/travel-history/TravelHistory";
@@ -8,7 +7,6 @@ import {SelectTrip} from "@/db/schema";
 
 const getTravelHistory = unstable_cache(
   async (userId):Promise<SelectTrip[]> => {
-    console.log("getTravelHistory", userId)
     return (await TravelHistoryDAO.getTrips(userId)).unwrapOr([]);
   },
   ['travel_history'],

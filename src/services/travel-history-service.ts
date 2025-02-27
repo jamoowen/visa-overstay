@@ -5,11 +5,13 @@ import { DateUtils } from "@/lib/date-utils";
 
 export interface TravelHistoryProcessor {
   enrichTripsWithCountryAndDurationData(allTrips: SelectTrip[]): EnrichedTrip[];
+
   cutoffTripsAtTwelveMonths(today: Date, trips: EnrichedTrip[]): EnrichedTrip[];
-  calculateDaysSpentTravelling(trips: EnrichedTrip[], homeCountry?: WorldCountryKey): DaysSpentTravelling;
+
+  calculateDaysSpentTravelling(today: Date, trips: EnrichedTrip[], homeCountry?: WorldCountryKey): DaysSpentTravelling | null;
 }
 
-export class TravelHistoryService implements TravelHistoryProcessor{
+export class TravelHistoryService implements TravelHistoryProcessor {
   public enrichTripsWithCountryAndDurationData(allTrips: SelectTrip[]): EnrichedTrip[] {
     //assuming alltrips is sorted in descending order
     const enrichedTrips = allTrips.map((trip, index) => {
@@ -32,7 +34,7 @@ export class TravelHistoryService implements TravelHistoryProcessor{
 
   public cutoffTripsAtTwelveMonths(today: Date, trips: EnrichedTrip[]): EnrichedTrip[] {
     const currentYMD = DateUtils.getFloorOfDate(today);
-    const twelveMonthsAgo = new Date(currentYMD.getFullYear() - 1, currentYMD.getMonth(), currentYMD.getDate());
+    const twelveMonthsAgo = DateUtils.addMonthsToDate(new Date(currentYMD), -12)
     const modifiedTrips: EnrichedTrip[] = [];
     for (let i = 0; i < trips.length; i++) {
       const arrivalDate = new Date(trips[i].arrivalDate);
@@ -40,30 +42,27 @@ export class TravelHistoryService implements TravelHistoryProcessor{
         modifiedTrips.push(trips[i]);
         continue;
       }
-      const dateDiff = DateUtils.calculateAbsoluteDateDifferenceInDays(arrivalDate, twelveMonthsAgo);
-      console.log(`date diff: ${dateDiff} for ${i} `);
-      if (dateDiff > trips[i].duration) {
-        break;
-      }
+      const dateDiffInDays = DateUtils.calculateAbsoluteDateDifferenceInDays(arrivalDate, twelveMonthsAgo);
       modifiedTrips.push({
         ...trips[i],
-        duration: dateDiff
+        duration: trips[i].duration-dateDiffInDays-1,
       })
       break;
     }
     return modifiedTrips;
   }
 
-  public calculateDaysSpentTravelling(trips: EnrichedTrip[], homeCountry?:WorldCountryKey): DaysSpentTravelling {
+  public calculateDaysSpentTravelling(today: Date, trips: EnrichedTrip[], homeCountry?: WorldCountryKey): DaysSpentTravelling | null {
+    if (!trips || !trips.length) return null;
     const daysSpentObject: DaysSpentTravelling = {
       daysSpentInEU: 0,
       daysSpentOutsideUK: 0,
       ...(homeCountry ? { daysSpentOutsideHomeCountry: 0 } : {})
     }
-    return trips.reduce((acc,trip)=> {
-      if (trip.isEuTrip) acc['daysSpentInEU']+=trip.duration;
-      if (trip.country!=='unitedKingdom') acc['daysSpentOutsideUK'] += trip.duration;
-      if (acc['daysSpentOutsideHomeCountry'] && trip.country!==homeCountry) acc['daysSpentOutsideHomeCountry'] += trip.duration;
+    return trips.reduce((acc, trip) => {
+      if (trip.isEuTrip) acc['daysSpentInEU'] += trip.duration;
+      if (trip.country !== 'unitedKingdom') acc['daysSpentOutsideUK'] += trip.duration;
+      if (acc['daysSpentOutsideHomeCountry'] != null && trip.country !== homeCountry) acc['daysSpentOutsideHomeCountry'] += trip.duration;
       return acc;
     }, daysSpentObject)
 

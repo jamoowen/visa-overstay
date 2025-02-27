@@ -1,11 +1,10 @@
 import {Result, err, ok} from "neverthrow";
 import {InsertTrip, SelectTrip, travelHistory} from "@/db/schema";
 import {db} from "@/db/db";
-import {asc, desc, eq, and} from "drizzle-orm";
+import { desc, eq, and} from "drizzle-orm";
 
 export class TravelHistoryDAO {
   public static async getTrips(userId:number): Promise<Result<SelectTrip[], Error>> {
-    console.log(`getting trips for ${userId}`);
     try {
       const trips = await db.select()
         .from(travelHistory)
@@ -35,7 +34,6 @@ export class TravelHistoryDAO {
   }
   public static async deleteTrip(userId: number, arrivalDate: string): Promise<Result<void, Error>> {
     try {
-      console.log(`deleteing for user ${userId} for arrivalDate: ${arrivalDate}`);
       const result = await db.delete(travelHistory)
         .where(and(eq(travelHistory.userId, userId), eq(travelHistory.arrivalDate, arrivalDate)));
       if (result.rowCount <1) {
